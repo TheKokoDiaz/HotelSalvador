@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salvador - Panel de Alimentos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="logo">Salvador</div>
+        <div class="nav-links">
+            <a href="/admin/habitaciones">Habitaciones</a>
+            <a href="/admin/comida" class="active">Comidas</a>
+            <a href="#" style="color: #64748B;">Su Cuenta</a>
+            <a href="/logout" class="logout">Salir</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header-section">
+            <h1>Administración de Menú</h1>
+            <p class="subtitle">Añade o remueve platillos de la carta disponible en tiempo real en la plataforma.</p>
+        </div>
+
+        <div class="admin-layout">
+            <div class="form-card">
+                <h2>Nuevo Platillo</h2>
+                <form action="/admin/comida/agregar" method="POST">
+                    <div class="form-group">
+                        <label>Nombre del Platillo</label>
+                        <input type="text" name="nombre" required placeholder="Ej. Solomillo de Res">
+                    </div>
+                    <div class="form-group">
+                        <label>Categoría</label>
+                        <select name="tipo">
+                            <option value="Entradas">Entradas</option>
+                            <option value="Fuertes">Platos Fuertes</option>
+                            <option value="Postres">Postres de Autor</option>
+                            <option value="Bebidas">Cava & Destilados</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Precio Unitario (MXN)</label>
+                        <input type="number" step="0.01" name="precio" required placeholder="0.00">
+                    </div>
+                    <button type="submit" class="btn-primary">Publicar Platillo</button>
+                </form>
+            </div>
+
+            <div class="table-card">
+                <h2>Menú Activo</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Categoría</th>
+                            <th>Precio</th>
+                            <th>Operación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for platillo in platillos %}
+                        <tr>
+                            <td>{{ platillo.PLA_id }}</td>
+                            <td><strong>{{ platillo.PLA_nombre }}</strong></td>
+                            <td>{{ platillo.PLA_tipo }}</td>
+                            <td>${{ platillo.PLA_precio }} MXN</td>
+                            <td>
+                                <a href="/admin/comida/eliminar/{{ platillo.PLA_id }}" class="btn-danger">Eliminar</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+</body>
+</html>
