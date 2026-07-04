@@ -1,0 +1,212 @@
+/* Estilos Globales para el Panel de Administración de Salvador */
+body { 
+    font-family: 'Inter', sans-serif; 
+    background-color: #F4F7F6; 
+    margin: 0; 
+    padding: 0; 
+}
+
+.navbar { 
+    background-color: #1A1C1E; 
+    color: white; 
+    padding: 20px 40px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+}
+
+.logo { 
+    font-family: 'Playfair Display', serif; 
+    color: #C5A059; 
+    font-size: 26px; 
+    font-weight: bold; 
+}
+
+.nav-links a { 
+    color: white; 
+    text-decoration: none; 
+    margin-left: 20px; 
+    font-weight: 600; 
+    font-size: 14px; 
+    transition: color 0.3s ease;
+}
+
+.nav-links a:hover, .nav-links a.active, .nav-links a.logout { 
+    color: #C5A059; 
+}
+
+/* Encabezado de sección de ancho completo */
+.header-section {
+    margin-bottom: 30px;
+    border-bottom: 1px solid #E2E8F0;
+    padding-bottom: 20px;
+}
+
+h1 { 
+    font-family: 'Playfair Display', serif; 
+    color: #111D2B; 
+    margin: 0 0 8px 0; 
+    font-size: 32px;
+}
+
+h2 {
+    font-family: 'Playfair Display', serif; 
+    color: #111D2B; 
+    margin-top: 0;
+    font-size: 22px;
+}
+
+.subtitle {
+    color: #64748B;
+    margin: 0;
+    font-size: 15px;
+}
+
+/* Contenedores Principales */
+.container { 
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 40px; 
+    box-sizing: border-box;
+}
+
+/* Distribución en dos columnas simétricas para Comida */
+.admin-layout {
+    display: flex; 
+    gap: 30px; 
+    align-items: flex-start;
+}
+
+.form-card { 
+    background: white; 
+    padding: 30px; 
+    border-radius: 12px; 
+    width: 380px; 
+    flex-shrink: 0;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); 
+}
+
+.table-card { 
+    background: white; 
+    padding: 30px; 
+    border-radius: 12px; 
+    flex-grow: 1; 
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); 
+}
+
+.form-group { 
+    margin-bottom: 20px; 
+}
+
+label { 
+    display: block; 
+    font-size: 11px; 
+    font-weight: 700; 
+    color: #64748B; 
+    margin-bottom: 8px; 
+    text-transform: uppercase; 
+    letter-spacing: 0.5px;
+}
+
+input, select, textarea { 
+    width: 100%; 
+    padding: 12px; 
+    background-color: #F8F6F2; 
+    border: 1px solid #E2E8F0; 
+    border-radius: 8px; 
+    box-sizing: border-box; 
+    font-family: inherit; 
+    font-size: 14px;
+    color: #111D2B;
+    transition: all 0.3s ease;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #C5A059;
+    background-color: white;
+}
+
+button.btn-primary { 
+    background-color: #C5A059; 
+    color: white; 
+    border: none; 
+    padding: 14px 20px; 
+    border-radius: 25px; 
+    font-weight: bold; 
+    width: 100%; 
+    cursor: pointer; 
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+button.btn-primary:hover {
+    background-color: #B08E4B;
+}
+
+table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    margin-top: 10px; 
+}
+
+th { 
+    background-color: #111D2B; 
+    color: white; 
+    text-align: left; 
+    padding: 14px; 
+    font-size: 13px; 
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+td { 
+    padding: 14px; 
+    border-bottom: 1px solid #E2E8F0; 
+    font-size: 14px; 
+    color: #334155;
+}
+
+.btn-danger { 
+    background-color: #EF4444; 
+    color: white; 
+    border: none; 
+    padding: 8px 16px; 
+    border-radius: 6px; 
+    cursor: pointer; 
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.btn-danger:hover {
+    background-color: #DC2626;
+}
+
+/* Grid elegante para habitaciones (3 o 4 columnas fluidas) */
+.grid-habitaciones { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+    gap: 25px; 
+    width: 100%;
+}
+
+.room-card { 
+    background: white; 
+    border-radius: 12px; 
+    padding: 25px; 
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+    display: flex; 
+    flex-direction: column; 
+    justify-content: space-between; 
+    min-height: 180px;
+    border-top: 4px solid #111D2B;
+}
+
+.room-number { font-size: 24px; font-weight: bold; color: #111D2B; margin-bottom: 4px; }
+.room-type { font-size: 14px; color: #64748B; margin-bottom: 15px; }
+.status-badge { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; display: inline-block; text-align: center; margin-bottom: 15px; width: fit-content; }
+.status-Disponible { background-color: #DCFCE7; color: #15803D; }
+.status-Ocupado { background-color: #FEE2E2; color: #B91C1C; }
+.status-Limpieza { background-color: #FEF9C3; color: #A16207; }
