@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salvador - Estatus de Habitaciones</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="logo">Salvador</div>
+        <div class="nav-links">
+            <a href="/admin/habitaciones" class="active">Habitaciones</a>
+            <a href="/admin/comida">Comidas</a>
+            <a href="#" style="color: #64748B;">Su Cuenta</a>
+            <a href="/logout" class="logout">Salir</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="header-section">
+            <h1>Estado de Habitaciones</h1>
+            <p class="subtitle">Monitoreo de disponibilidad del hotel para evitar sobreventas o duplicados.</p>
+        </div>
+
+        <div class="grid-habitaciones">
+            {% for hab in habitaciones %}
+            <div class="room-card">
+                <div>
+                    <div class="room-number">Habitación {{ hab.HAB_numero }}</div>
+                    <div class="room-type">{{ hab.HAB_tipo_habitacion }}</div>
+                    <span class="status-badge status-{{ hab.HAB_estado }}">{{ hab.HAB_estado }}</span>
+                </div>
+                
+                <form action="/admin/habitaciones/cambiar-estado/{{ hab.HAB_id }}" method="POST">
+                    <select name="nuevo_estado" class="room-status-select" onchange="this.form.submit()">
+                        <option value="">Actualizar...</option>
+                        <option value="Disponible">Disponible</option>
+                        <option value="Ocupado">Ocupado</option>
+                        <option value="Limpieza">Limpieza</option>
+                    </select>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+</body>
+</html>
