@@ -91,7 +91,7 @@ INSERT INTO SIS_Administrador VALUES
 ("0", "Ryu", "ryu@gmail.com", "1234567890");
 
 /* PROCEDIMIENTOS ALMACENADOS */
-DROP PROCEDURE SP_IniciarSesion;
+-- Iniciar Sesión para ambos roles (Cliente o Administrador)
 DELIMITER $$
 CREATE PROCEDURE SP_IniciarSesion
 (
@@ -124,7 +124,34 @@ BEGIN
 END $$
 DELIMITER ;
 
-CALL SP_IniciarSesion("admin@gmail.com", "1234567890");
+-- CALL SP_IniciarSesion("admin@gmail.com", "1234567890");
+
+-- Registrar clientes nuevos
+DELIMITER $$
+CREATE PROCEDURE SP_RegistrarCliente
+(
+	IN SP_nombre 		VARCHAR(100),
+	IN SP_direccion 	VARCHAR(255),
+	IN SP_telefono 		VARCHAR(20),
+	IN SP_contrasenia 	VARCHAR(80)
+)
+BEGIN
+	IF EXISTS(SELECT 1 FROM SIS_Cliente WHERE CLI_direccion = SP_direccion) THEN
+		SELECT
+			0													Id,
+            "La dirección de correo ya esta siendo utilizada"	Alerta;
+    ELSE
+		INSERT INTO SIS_Cliente VALUES
+		("0", SP_nombre, SP_direccion, SP_telefono, SP_contrasenia);
+        
+        SELECT
+			CLI_id  Id
+		FROM SIS_Cliente WHERE CLI_direccion = SP_direccion AND CLI_contrasenia = SP_contrasenia;
+	END IF;
+END $$
+DELIMITER ;
+
+-- CALL SP_RegistrarCliente("Kakaroto", "goku@gmail.com", "7751958847", "1234567890");
 
 -- Plantilla 
 /*

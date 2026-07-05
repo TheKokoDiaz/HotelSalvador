@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrarse</title>
+
+    <!-- Icono de la pestaña -->
+    <link rel="shortcut icon" href="{{ url_for('static', filename = 'icons/shortcutIcon.png') }}" type="image/x-icon">
+</head>
+<body>
+    <main>
+        <form action="/tryRegister" method="post">
+            <fieldset>
+                <h1>Registrarse</h1>
+                <!-- Los datos de este formulario son exclusivos para registrar CLIENTES -->
+                <span class="inputField">
+                    <label for="nombre">Nombre: </label>
+                    <input type="text" name="nombre" id="nombre" placeholder="¿Cómo te llamas?" required>
+                </span>
+
+                <span class="inputField">
+                    <label for="correo">Correo: </label>
+                    <input type="email" name="correo" id="correo" placeholder="tuCorreo@gmail.com" required>
+                </span>
+                
+                <span class="inputField">
+                    <label for="telefono">Telefono: </label>
+                    <input type="tel" name="telefono" id="telefono" placeholder="XXX-XXX-XXXX" required>
+                </span>
+                
+                <span class="inputField">
+                    <label for="contrasenia">Contraseña: </label>
+                    <input type="password" name="contrasenia" id="contrasenia" placeholder="********" required>
+                </span>
+                
+                <span class="inputField">
+                    <label for="confirmarContrasenia">Confirmar Contraseña: </label>
+                    <input type="password" name="confirmarContrasenia" id="confirmarContrasenia" placeholder="********" required>
+                </span>
+
+                <span class="errorField">
+                    {{ alert | default('') }}
+                </span>
+
+                <span>
+                    ¿Ya tienes una cuenta? <a href="/login">Iniciar Sesión</a>
+                </span>
+                
+                <input type="submit" value="Registrarse">
+            </fieldset>
+        </form>
+    </main>
+</body>
+</html>

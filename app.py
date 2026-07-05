@@ -56,7 +56,6 @@ def index():
 def login():
     return render_template("login.html")
 
-
 # Operaciones del Inicio de Sesión
 @app.route('/tryLogin', methods=["POST"])
 def tryLogin():
@@ -89,13 +88,47 @@ def tryLogin():
             # El telefono es la unica variable extra que posee el cliente
             session["telefono"] = query.get('Telefono')
             return render_template("cliente_principal.html")
+        
+# Registrarse
+@app.route('/register')
+def register():
+    return render_template("register.html")
+
+@app.route('/tryRegister', methods=["POST"])
+def tryRegister():
+    # Recuperamos los datos del formulario
+    nombre = request.form["nombre"]
+    email = request.form["correo"]
+    telefono = request.form["telefono"]
+    contrasenia = request.form["contrasenia"]
+
+    # Procedimiento almacenado
+    conn   = get_db_connection()
+    cursor = conn.cursor()
+    cursor.callproc("SP_RegistrarCliente", [nombre, email, telefono, contrasenia])
+    query = cursor.fetchall()[0]
+    conn.commit()   # Confirmamos inserción
+    cursor.close()
+    conn.close()
+
+    # Checamos si se registró correctamente
+    if not query or query.get('Id') == 0:
+        return render_template("register.html", alert=query.get('Alerta'))
+    else:
+        # Guardamos su información en la sesión
+        session["id"] = query.get('Id')
+        session["rol"] = "Cliente"
+        session["nombre"] = nombre
+        session["correo"] = email
+        session["telefono"] = telefono
+        
+        return render_template("cliente_principal.html")
 
 # Cierre de Sesión
 @app.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('index'))
-
 
 # =====================================================================
 # RUTAS DEL MÓDULO DE ADMINISTRACIÓN (Mapeadas a la BD de SqlScript.sql)
