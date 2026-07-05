@@ -24,30 +24,42 @@ def get_db_connection():
 
 """ FUNCIONES """
 # Verifica el ID para ver si ya se inicio sesión
+# y recupera el Rol para reedirigir
 def isLogged():
     id = session.get("id")
-    print(id)
 
     if(id == 0 or id == None):
-        return False
+        return 0    # 0 de nada
     else:
-        return True
+        rol = session.get("rol")
+
+        if(rol == "Cliente"):
+            return 1
+        
+        if(rol == "Administrador"):
+            return 2
+
 
 """ FUNCIONES DE FLASK """
 # Página Principal
 @app.route("/")
 def index():
-    if(isLogged()):
-        return render_template("index.html")
+    if(isLogged() == 1):
+        return render_template("cliente_principal.html")
+    elif(isLogged() == 2):
+        return render_template("admin_principal.html")
     else:
-        return render_template("login.html")
+        return render_template("index.html")
 
 # Inicio de Sesión
-@app.route('/login', methods=["POST"])
+@app.route('/login')
 def login():
-    # NOTA: POR EL MOMENTO ESTE LOGIN SOLO PERMITE A "CLIENTES" INGRESAR,
-    # SE DEBE MODIFICAR EL PROCEDIMIENTO ALMACENADO.
+    return render_template("login.html")
 
+
+# Operaciones del Inicio de Sesión
+@app.route('/tryLogin', methods=["POST"])
+def tryLogin():
     # Recuperamos los datos del formulario
     email = request.form["correo"]
     password = request.form["contrasenia"]
@@ -56,18 +68,29 @@ def login():
     conn   = get_db_connection()
     cursor = conn.cursor()
     cursor.callproc("SP_IniciarSesion", [email, password])
-    query = cursor.fetchall() # Recuperamos las filas resultantes
+    query = cursor.fetchall()[0] # Recuperamos la fila resultante
     cursor.close()
     conn.close()
 
-    # Si el procedimiento devuelve que el ID es 0 o está vacío
-    if not query or query[0].get('Id') == 0:
+    # El procedimiento devuelve que el ID es 0 o está vacío
+    if not query or query.get('Id') == 0:
         return render_template("login.html", alert="Correo o contraseña incorrectos")
     else:
-        # Guardamos la sesión con el ID real del usuario del diccionario
-        session["id"] = query[0].get('Id')
-        return render_template("index.html")
+        # Guardamos los datos generales
+        session["id"] = query.get('Id')
+        session["rol"] = query.get('Rol')
+        session["nombre"] = query.get('Nombre')
+        session["correo"] = query.get('Direccion')
 
+        # Revisamos el rol
+        if(query.get('Rol') == "Administrador"):
+            return render_template("admin_principal.html")
+        else:
+            # El telefono es la unica variable extra que posee el cliente
+            session["telefono"] = query.get('Telefono')
+            return render_template("cliente_principal.html")
+
+# Cierre de Sesión
 @app.route('/logout')
 def logout():
     session.clear()

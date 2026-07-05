@@ -83,9 +83,15 @@ CREATE TABLE SIS_Recibo (
 
 /* DATOS DE PRUEBA */
 INSERT INTO SIS_Cliente VALUES
-("0", "Koko", "koko@gmail.com", "7751346188", "1234567890");
+("0", "Koko", "koko@gmail.com", "7751346188", "1234567890"),
+("0", "cliente", "cliente@gmail.com", "775307631", "1234567890");
+
+INSERT INTO SIS_Administrador VALUES
+("0", "Admin", "admin@gmail.com", "1234567890"),
+("0", "Ryu", "ryu@gmail.com", "1234567890");
 
 /* PROCEDIMIENTOS ALMACENADOS */
+DROP PROCEDURE SP_IniciarSesion;
 DELIMITER $$
 CREATE PROCEDURE SP_IniciarSesion
 (
@@ -93,20 +99,32 @@ CREATE PROCEDURE SP_IniciarSesion
     IN SP_Contrasenia	NVARCHAR(80)
 )
 BEGIN
+	-- Primero busca en la tabla de clientes
 	IF EXISTS(SELECT 1 FROM SIS_Cliente WHERE CLI_direccion = SP_Correo AND CLI_contrasenia = SP_Contrasenia) THEN
 		SELECT
 			CLI_id			Id,
+            "Cliente"		Rol,
             CLI_nombre		Nombre,
 			CLI_direccion	Direccion,
 			CLI_telefono	Telefono
 		FROM SIS_Cliente WHERE CLI_direccion = SP_Correo AND CLI_contrasenia = SP_Contrasenia;
     ELSE
-		SELECT 0 Id;
+		-- Luego busca en la tabla de administradores
+        IF EXISTS(SELECT 1 FROM SIS_Administrador WHERE ADM_correo = SP_Correo AND ADM_contrasenia = SP_Contrasenia) THEN
+			SELECT
+				ADM_id				Id,
+				"Administrador"		Rol,
+				ADM_nombre			Nombre,
+				ADM_correo			Direccion
+			FROM SIS_Administrador WHERE ADM_correo = SP_Correo AND ADM_contrasenia = SP_Contrasenia;
+        ELSE
+			SELECT 0 Id;
+		END IF;
     END IF;
 END $$
 DELIMITER ;
 
-CALL SP_IniciarSesion("koko@gmail.com", "1234567890");
+CALL SP_IniciarSesion("admin@gmail.com", "1234567890");
 
 -- Plantilla 
 /*
