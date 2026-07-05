@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Hotel Salvador{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,500;1,600&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/clientelogin.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="navbar__brand">Salvador</div>
+        <nav class="navbar__links">
+            <a href="{{ url_for('cliente_reservaciones') }}" class="{{ 'is-active' if active == 'reservaciones' else '' }}">Reservaciones</a>
+            <a href="{{ url_for('cliente_menu') }}" class="{{ 'is-active' if active == 'menu' else '' }}">Menú</a>
+            <a href="{{ url_for('cliente_cuenta') }}" class="{{ 'is-active' if active == 'cuenta' else '' }}">Tu cuenta</a>
+            <a href="{{ url_for('logout') }}" class="navbar__salir">Salir</a>
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+</body>
+</html>

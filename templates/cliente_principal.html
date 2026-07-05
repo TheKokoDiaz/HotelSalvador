@@ -1,17 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cliente Principal</title>
+{% extends "base.html" %}
 
-    <!-- Icono de la pestaña -->
-    <link rel="shortcut icon" href="{{ url_for('static', filename = 'icons/shortcutIcon.png') }}" type="image/x-icon">
-</head>
-<body>
-    <main>
-        <h1>Bienvenido Cliente</h1>
-        <a href="/logout">Cerrar Sesión</a>
-    </main>
-</body>
-</html>
+{% block title %}Bienvenido — Hotel Salvador{% endblock %}
+
+{% block content %}
+<section class="hero" style="background-image: url('{{ url_for('static', filename='img/hero-hotel.jpg') }}');">
+    <div class="hero__overlay"></div>
+    <div class="hero__content">
+        <h1 class="hero__title">Bienvenido{{ ", " + session['nombre'] if session.get('nombre') else "" }}</h1>
+        <p class="hero__subtitle">Comencemos con seleccionar tu habitación.</p>
+        <a href="{{ url_for('cliente_habitaciones') }}" class="btn-vamos">¡Vamos!</a>
+    </div>
+</section>
+{% endblock %}

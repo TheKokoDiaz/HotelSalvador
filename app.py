@@ -16,7 +16,7 @@ def get_db_connection():
     return pymysql.connect(
         host     = "127.0.0.1",
         user     = "root",
-        password = "",  # La conexión no lleva contraseña
+        password = "12345",  # La conexión no lleva contraseña
         database = "DB_SistemaHotelero",
         port     = 3306,
         cursorclass = pymysql.cursors.DictCursor # Transforma las tuplas en diccionarios para Jinja
@@ -130,6 +130,25 @@ def logout():
     session.clear()
     return redirect(url_for('index'))
 
+# =====================================================================
+# RUTAS DEL MÓDULO DE CLIENTE
+# =====================================================================
+
+@app.route("/cliente/habitaciones")
+def cliente_habitaciones():
+    return "Aquí va el listado de SIS_Habitacion (siguiente paso)."
+
+@app.route("/cliente/reservaciones")
+def cliente_reservaciones():
+    return "Vista de reservaciones (SIS_Reservacion) — pendiente."
+
+@app.route("/cliente/menu")
+def cliente_menu():
+    return "Vista de menú (SIS_Platillo / SIS_Pedido) — pendiente."
+
+@app.route("/cliente/cuenta")
+def cliente_cuenta():
+    return "Vista de la cuenta del cliente — pendiente."
 # =====================================================================
 # RUTAS DEL MÓDULO DE ADMINISTRACIÓN (Mapeadas a la BD de SqlScript.sql)
 # =====================================================================
