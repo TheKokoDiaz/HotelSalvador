@@ -4,6 +4,7 @@
 """ LIBRERÍAS """
 import pymysql
 from flask import Flask, jsonify, request, session, render_template, redirect, url_for
+from datetime import datetime
 
 """ VARIABLES GLOBALES """
 app = Flask(__name__)
@@ -136,11 +137,67 @@ def logout():
 
 @app.route("/cliente/habitaciones")
 def cliente_habitaciones():
-    return "Aquí va el listado de SIS_Habitacion (siguiente paso)."
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """SELECT HAB_id, HAB_numero, HAB_tipo_habitacion, HAB_tipo_cama,
+                  HAB_precio, HAB_estado, HAB_foto
+           FROM SIS_Habitacion
+           WHERE HAB_estado = 'Disponible'"""
+    )
+    habitaciones_db = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    return render_template(
+        "cliente_habitaciones.html",
+        habitaciones=habitaciones_db,
+        active="habitaciones",
+    )
+# --------------------------------------------------------------------------
+# REEMPLAZA tu ruta actual de "cliente_reservaciones" (la del texto plano)
+# por esta versión real, y AGREGA la nueva ruta "cancelar_reservacion".
+# --------------------------------------------------------------------------
 
 @app.route("/cliente/reservaciones")
 def cliente_reservaciones():
-    return "Vista de reservaciones (SIS_Reservacion) — pendiente."
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """SELECT r.RES_id, r.RES_num_dias, r.RES_total,
+                  h.HAB_numero, h.HAB_tipo_habitacion, h.HAB_tipo_cama
+           FROM SIS_Reservacion r
+           JOIN SIS_Habitacion h ON r.HAB_id_fk = h.HAB_id
+           WHERE r.CLI_id_fk = %s
+           ORDER BY r.RES_id DESC""",
+        (session["id"],)
+    )
+    reservaciones_db = cursor.fetchall()
+    cursor.close()
+    conn.close()
+
+    return render_template(
+        "cliente_reservaciones.html",
+        reservaciones=reservaciones_db,
+        active="reservaciones",
+    )
+
+
+# Cancela (elimina) una reservación, solo si le pertenece al cliente en sesión
+@app.route("/cliente/reservaciones/<int:res_id>/cancelar", methods=["POST"])
+def cancelar_reservacion(res_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    # El "AND CLI_id_fk = %s" evita que un cliente cancele la reservación de otro
+    cursor.execute(
+        "DELETE FROM SIS_Reservacion WHERE RES_id = %s AND CLI_id_fk = %s",
+        (res_id, session["id"])
+    )
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return redirect(url_for("cliente_reservaciones"))
 
 @app.route("/cliente/menu")
 def cliente_menu():
@@ -149,6 +206,80 @@ def cliente_menu():
 @app.route("/cliente/cuenta")
 def cliente_cuenta():
     return "Vista de la cuenta del cliente — pendiente."
+
+
+# --------------------------------------------------------------------------
+# AGREGAR ESTO A app.py
+# 1. Al inicio del archivo, junto a tus demás imports, agrega:
+#       from datetime import datetime
+# 2. Pega estas dos rutas donde tengas las demás rutas de cliente.
+# --------------------------------------------------------------------------
+
+# Muestra el formulario de solicitud para UNA habitación específica
+# (se llega aquí después de darle click a una habitación en el listado)
+@app.route("/cliente/habitaciones/<int:hab_id>/solicitar", methods=["GET"])
+def cliente_solicitud_habitacion(hab_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """SELECT HAB_id, HAB_numero, HAB_tipo_habitacion, HAB_tipo_cama,
+                  HAB_precio, HAB_estado, HAB_foto
+           FROM SIS_Habitacion WHERE HAB_id = %s""",
+        (hab_id,)
+    )
+    habitacion = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
+    # Si el id no existe, regresamos al listado en vez de tronar
+    if not habitacion:
+        return redirect(url_for("cliente_habitaciones"))
+
+    return render_template(
+        "cliente_solicitud_habitacion.html",
+        habitacion=habitacion,
+        active="habitaciones",
+    )
+
+
+# Procesa el envío del formulario y crea la reservación real en la BD
+@app.route("/cliente/habitaciones/<int:hab_id>/solicitar", methods=["POST"])
+def procesar_solicitud_habitacion(hab_id):
+    fecha_entrada_str = request.form["fecha_entrada"]
+    fecha_salida_str = request.form["fecha_salida"]
+
+    try:
+        entrada = datetime.strptime(fecha_entrada_str, "%Y-%m-%d")
+        salida = datetime.strptime(fecha_salida_str, "%Y-%m-%d")
+        num_dias = (salida - entrada).days
+    except (ValueError, KeyError):
+        num_dias = 0
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Recuperamos el precio real de la habitación (nunca confiar en el precio del formulario)
+    cursor.execute("SELECT HAB_precio FROM SIS_Habitacion WHERE HAB_id = %s", (hab_id,))
+    habitacion = cursor.fetchone()
+
+    if not habitacion or num_dias <= 0:
+        cursor.close()
+        conn.close()
+        # Fecha inválida o habitación inexistente: regresamos al formulario
+        return redirect(url_for("cliente_solicitud_habitacion", hab_id=hab_id))
+
+    total = float(habitacion["HAB_precio"]) * num_dias
+
+    cursor.execute(
+        """INSERT INTO SIS_Reservacion (CLI_id_fk, HAB_id_fk, RES_num_dias, RES_total)
+           VALUES (%s, %s, %s, %s)""",
+        (session["id"], hab_id, num_dias, total)
+    )
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return redirect(url_for("cliente_reservaciones"))
 # =====================================================================
 # RUTAS DEL MÓDULO DE ADMINISTRACIÓN (Mapeadas a la BD de SqlScript.sql)
 # =====================================================================

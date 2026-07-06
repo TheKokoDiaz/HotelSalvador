@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Mis Reservaciones — Hotel Salvador{% endblock %}
+
+{% block extra_css %}
+<style>
+    .res-table-wrap {
+        max-width: 1180px;
+        margin: 0 auto;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(20,30,45,0.05);
+        overflow: hidden;
+    }
+    table.res-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+    }
+    table.res-table thead {
+        background: #f9fafb;
+    }
+    table.res-table th {
+        text-align: left;
+        padding: 14px 20px;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6b7280;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    table.res-table td {
+        padding: 16px 20px;
+        border-bottom: 1px solid #f1f2f4;
+        color: #1c2534;
+    }
+    table.res-table tr:last-child td { border-bottom: none; }
+    .res-habitacion strong { display: block; }
+    .res-habitacion span { color: #9ca3af; font-size: 0.78rem; }
+    .res-total { font-weight: 600; }
+    .btn-cancelar {
+        border: 1px solid #fca5a5;
+        color: #b91c1c;
+        background: #fff;
+        padding: 7px 14px;
+        border-radius: 7px;
+        font-size: 0.8rem;
+        cursor: pointer;
+    }
+    .btn-cancelar:hover { background: #fef2f2; }
+    .no-reservaciones {
+        max-width: 1180px;
+        margin: 40px auto;
+        text-align: center;
+        color: #6b7280;
+    }
+    .no-reservaciones a {
+        color: var(--navy);
+        font-weight: 600;
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+    <div class="page-header">
+        <h1>Mis Reservaciones</h1>
+        <p>Aquí puedes ver el estado de tus reservaciones actuales.</p>
+    </div>
+
+    {% if reservaciones %}
+    <div class="res-table-wrap">
+        <table class="res-table">
+            <thead>
+                <tr>
+                    <th>Habitación</th>
+                    <th>Tipo de cama</th>
+                    <th>Noches</th>
+                    <th>Total</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for res in reservaciones %}
+                <tr>
+                    <td class="res-habitacion">
+                        <strong>#{{ res['HAB_numero'] }} — {{ res['HAB_tipo_habitacion'] }}</strong>
+                        <span>Reservación #{{ res['RES_id'] }}</span>
+                    </td>
+                    <td>{{ res['HAB_tipo_cama'] }}</td>
+                    <td>{{ res['RES_num_dias'] }}</td>
+                    <td class="res-total">${{ "%.2f"|format(res['RES_total']) }} MXN</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('cancelar_reservacion', res_id=res['RES_id']) }}" onsubmit="return confirm('¿Seguro que quieres cancelar esta reservación?');">
+                            <button type="submit" class="btn-cancelar">Cancelar</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="no-reservaciones">
+        <p>Aún no tienes ninguna reservación.</p>
+        <p><a href="{{ url_for('cliente_habitaciones') }}">Explora nuestras habitaciones</a> para hacer tu primera reserva.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Solicitud de Habitación — Hotel Salvador{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/formulario.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+
+    <div class="page-header">
+        <h1>Solicitud de Habitación</h1>
+        <p>Complete el formulario para solicitar su reserva.</p>
+    </div>
+
+    {% if error %}
+    <div class="alert-error">{{ error }}</div>
+    {% endif %}
+
+    <form class="form-card" method="POST" action="{{ url_for('procesar_solicitud_habitacion', hab_id=habitacion['HAB_id']) }}">
+
+        <div class="form-sections">
+
+            <!-- 1. Datos del huésped (prellenado desde la sesión, informativo) -->
+            <div class="form-section">
+                <h3><span class="step-num">1</span> Datos del huésped</h3>
+
+                <div class="field">
+                    <label>Nombre completo</label>
+                    <input type="text" name="nombre_huesped" value="{{ session.get('nombre', '') }}" required>
+                </div>
+
+                <div class="field">
+                    <label>Correo electrónico</label>
+                    <input type="email" name="correo_huesped" value="{{ session.get('correo', '') }}" required>
+                </div>
+
+                <div class="field">
+                    <label>Teléfono</label>
+                    <input type="tel" name="telefono_huesped" value="{{ session.get('telefono', '') }}" required>
+                </div>
+            </div>
+
+            <!-- 2. Fechas de estancia -> calculan RES_num_dias -->
+            <div class="form-section">
+                <h3><span class="step-num">2</span> Fechas de estancia</h3>
+
+                <div class="field">
+                    <label>Fecha de entrada</label>
+                    <input type="date" name="fecha_entrada" required>
+                </div>
+
+                <div class="field">
+                    <label>Fecha de salida</label>
+                    <input type="date" name="fecha_salida" required>
+                </div>
+            </div>
+
+            <!-- 3. Detalles de la habitación (vienen de SIS_Habitacion, solo lectura) -->
+            <div class="form-section">
+                <h3><span class="step-num">3</span> Detalles de la habitación</h3>
+
+                <div class="field">
+                    <label>Habitación seleccionada</label>
+                    <input type="text" value="#{{ habitacion['HAB_numero'] }} — {{ habitacion['HAB_tipo_habitacion'] }}" disabled>
+                </div>
+
+                <div class="field">
+                    <label>Tipo de cama</label>
+                    <input type="text" value="{{ habitacion['HAB_tipo_cama'] }}" disabled>
+                </div>
+
+                <div class="stepper">
+                    <div>
+                        <label style="display:block; font-size:0.8rem; color:#4b5563; margin-bottom:6px;">Número de huéspedes</label>
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <button type="button" onclick="ajustarHuespedes(-1)">−</button>
+                            <span id="huespedesValor">2</span>
+                            <button type="button" onclick="ajustarHuespedes(1)">+</button>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" name="num_huespedes" id="numHuespedesInput" value="2">
+                <small style="color:#9ca3af; font-size:0.72rem;">* Este dato aún no se guarda — la base de datos no tiene una columna para huéspedes por reservación.</small>
+            </div>
+
+        </div>
+
+        <div class="form-sections form-sections--two">
+
+            <!-- 4. Servicios adicionales (no persisten todavía) -->
+            <div class="form-section">
+                <h3><span class="step-num">4</span> Servicios adicionales</h3>
+                <div class="checkbox-grid">
+                    <label class="checkbox-option">
+                        <input type="checkbox" name="servicios" value="Desayuno incluido">
+                        Desayuno incluido
+                    </label>
+                    <label class="checkbox-option">
+                        <input type="checkbox" name="servicios" value="Estacionamiento">
+                        Estacionamiento
+                    </label>
+                    <label class="checkbox-option">
+                        <input type="checkbox" name="servicios" value="WiFi Premium">
+                        WiFi Premium
+                    </label>
+                    <label class="checkbox-option">
+                        <input type="checkbox" name="servicios" value="Transporte al aeropuerto">
+                        Transporte al aeropuerto
+                    </label>
+                </div>
+                <small style="color:#9ca3af; font-size:0.72rem;">* Todavía no hay tabla para guardar servicios; por ahora es solo visual.</small>
+            </div>
+
+            <!-- 5. Peticiones especiales (no persiste todavía) -->
+            <div class="form-section">
+                <h3><span class="step-num">5</span> Peticiones especiales</h3>
+                <div class="field">
+                    <textarea name="peticiones" placeholder="Comparte si tiene alguna petición especial..."></textarea>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="form-footer">
+            <div class="form-footer__total">
+                <small>Total estimado (precio por noche × noches)</small>
+                <strong>$<span id="totalEstimado">{{ "%.2f"|format(habitacion['HAB_precio']) }}</span> MXN</strong>
+            </div>
+            <div class="form-footer__actions">
+                <button type="button" class="btn-secondary" onclick="window.location.href='{{ url_for('cliente_habitaciones') }}'">Cancelar</button>
+                <button type="submit" class="btn-primary">Solicitar Habitación</button>
+            </div>
+        </div>
+
+    </form>
+</div>
+
+<script>
+    const precioNoche = {{ habitacion['HAB_precio'] }};
+    let huespedes = 2;
+
+    function ajustarHuespedes(delta) {
+        huespedes = Math.max(1, huespedes + delta);
+        document.getElementById('huespedesValor').textContent = huespedes;
+        document.getElementById('numHuespedesInput').value = huespedes;
+    }
+
+    // Recalcula el total estimado en pantalla cuando cambian las fechas
+    // (el cálculo real y definitivo se hace en el backend al enviar el formulario)
+    function recalcularTotal() {
+        const entrada = document.querySelector('input[name="fecha_entrada"]').value;
+        const salida = document.querySelector('input[name="fecha_salida"]').value;
+
+        if (entrada && salida) {
+            const dias = Math.round((new Date(salida) - new Date(entrada)) / (1000 * 60 * 60 * 24));
+            const total = dias > 0 ? dias * precioNoche : precioNoche;
+            document.getElementById('totalEstimado').textContent = total.toFixed(2);
+        }
+    }
+
+    document.querySelector('input[name="fecha_entrada"]').addEventListener('change', recalcularTotal);
+    document.querySelector('input[name="fecha_salida"]').addEventListener('change', recalcularTotal);
+</script>
+{% endblock %}
