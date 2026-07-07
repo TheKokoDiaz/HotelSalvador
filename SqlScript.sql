@@ -1,5 +1,5 @@
 /* DROPEO DE LA BD */
-DROP DATABASE DB_SistemaHotelero;
+-- DROP DATABASE DB_SistemaHotelero;
 
 /* BASE DE DATOS */
 CREATE DATABASE DB_SistemaHotelero;
@@ -89,6 +89,12 @@ INSERT INTO SIS_Cliente VALUES
 INSERT INTO SIS_Administrador VALUES
 ("0", "Admin", "admin@gmail.com", "1234567890"),
 ("0", "Ryu", "ryu@gmail.com", "1234567890");
+
+INSERT INTO SIS_Habitacion (HAB_numero, HAB_tipo_habitacion, HAB_tipo_cama, HAB_precio, HAB_estado, HAB_foto) VALUES
+("101", "Individual", "1 cama matrimonial", 1500.00, "Disponible", NULL),
+("102", "Doble", "2 camas individuales", 2200.00, "Disponible", NULL),
+("103", "Suite", "King Size", 4500.00, "Disponible", NULL),
+("104", "Doble", "1 cama matrimonial", 2000.00, "Disponible", NULL);
 
 /* PROCEDIMIENTOS ALMACENADOS */
 -- Iniciar Sesión para ambos roles (Cliente o Administrador)
