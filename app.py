@@ -17,7 +17,7 @@ def get_db_connection():
     return pymysql.connect(
         host     = "127.0.0.1",
         user     = "root",
-        password = "12345",  # La conexión no lleva contraseña
+        password = "",
         database = "DB_SistemaHotelero",
         port     = 3306,
         cursorclass = pymysql.cursors.DictCursor # Transforma las tuplas en diccionarios para Jinja
@@ -74,7 +74,7 @@ def tryLogin():
 
     # El procedimiento devuelve que el ID es 0 o está vacío
     if not query or query.get('Id') == 0:
-        return render_template("login.html", alert="Correo o contraseña incorrectos")
+        return render_template("login.html", alert=True)
     else:
         # Guardamos los datos generales
         session["id"] = query.get('Id')

@@ -7,12 +7,25 @@
 
     <!-- Icono de la pestaña -->
     <link rel="shortcut icon" href="{{ url_for('static', filename = 'icons/shortcutIcon.png') }}" type="image/x-icon">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename = 'css/login&register.css') }}">
 </head>
 <body>
     <main>
         <form action="/tryLogin" method="post">
             <fieldset>
                 <h1>Inicio de Sesión</h1>
+
+                <p class="subtitle">
+                    Accede a todos los servicios de Hotel Salvador
+                </p>
+
+                {% if(alert | default(False)) %}
+                <span class="errorField">
+                    Correo o contraseña incorrectos
+                </span>
+                {% endif %}
 
                 <span class="inputField">
                     <label for="correo">Correo: </label>
@@ -22,10 +35,6 @@
                 <span class="inputField">
                     <label for="contrasenia">Contraseña: </label>
                     <input type="password" name="contrasenia" id="contrasenia" placeholder="********" required>
-                </span>
-
-                <span class="errorField">
-                    {{ alert | default('') }}
                 </span>
 
                 <span>

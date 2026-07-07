@@ -7,12 +7,26 @@
 
     <!-- Icono de la pestaña -->
     <link rel="shortcut icon" href="{{ url_for('static', filename = 'icons/shortcutIcon.png') }}" type="image/x-icon">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename = 'css/login&register.css') }}">
 </head>
 <body>
     <main>
         <form action="/tryRegister" method="post">
             <fieldset>
                 <h1>Registrarse</h1>
+
+                <p class="subtitle">
+                    Ingresa tus datos para conocerte mejor
+                </p>
+
+                {% if(alert | default(False)) %}
+                <span class="errorField">
+                    La dirección de correo ya esta siendo utilizada
+                </span>
+                {% endif %}
+
                 <!-- Los datos de este formulario son exclusivos para registrar CLIENTES -->
                 <span class="inputField">
                     <label for="nombre">Nombre: </label>
@@ -37,10 +51,6 @@
                 <span class="inputField">
                     <label for="confirmarContrasenia">Confirmar Contraseña: </label>
                     <input type="password" name="confirmarContrasenia" id="confirmarContrasenia" placeholder="********" required>
-                </span>
-
-                <span class="errorField">
-                    {{ alert | default('') }}
                 </span>
 
                 <span>
