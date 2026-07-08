@@ -96,6 +96,27 @@ INSERT INTO SIS_Habitacion (HAB_numero, HAB_tipo_habitacion, HAB_tipo_cama, HAB_
 ("103", "Suite", "King Size", 4500.00, "Disponible", NULL),
 ("104", "Doble", "1 cama matrimonial", 2000.00, "Disponible", NULL);
 
+INSERT INTO SIS_Platillo (PLA_nombre, PLA_tipo, PLA_precio, PLA_foto) VALUES
+-- Entradas
+("Tartar de Atún Aleta Azul",        "Entradas",         340.00, "tartar_atun.jpg"),
+("Ensalada Premium Salvador",         "Entradas",         290.00, "ensalada_premium.jpg"),
+("Carpaccio de Res al Trufa",         "Entradas",         310.00, "carpaccio_res.jpg"),
+ 
+-- Platos Fuertes
+("Solomillo al Vino Tinto",           "Platos Fuertes",   450.00, "solomillo_vino_tinto.jpg"),
+("Salmón en Costra de Hierbas",       "Platos Fuertes",   520.00, "salmon_costra_hierbas.jpg"),
+("Risotto de Hongos Silvestres",      "Platos Fuertes",   380.00, "risotto_hongos.jpg"),
+("Pechuga Rellena Salvador",          "Platos Fuertes",   400.00, "pechuga_rellena.jpg"),
+ 
+-- Postres de Autor
+("Texturas de Cacao Orgánico",        "Postres de Autor", 260.00, "texturas_cacao.jpg"),
+("Tarta de Limón y Merengue",         "Postres de Autor", 230.00, "tarta_limon.jpg"),
+ 
+-- Carne & Cócteles
+("Infusión Antigua Salvador",         "Carne & Cócteles", 270.00, "infusion_antigua.jpg"),
+("Costillar Ahumado 12 Horas",        "Carne & Cócteles", 490.00, "costillar_ahumado.jpg"),
+("Old Fashioned Salvador",            "Carne & Cócteles", 220.00, "old_fashioned.jpg");
+
 /* PROCEDIMIENTOS ALMACENADOS */
 -- Iniciar Sesión para ambos roles (Cliente o Administrador)
 DELIMITER $$
