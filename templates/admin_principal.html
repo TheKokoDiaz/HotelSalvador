@@ -5,13 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Principal</title>
 
+    <!-- Tipografía -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,500;1,600&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename = 'css/admin_principal.css') }}">
+
     <!-- Icono de la pestaña -->
     <link rel="shortcut icon" href="{{ url_for('static', filename = 'icons/shortcutIcon.png') }}" type="image/x-icon">
 </head>
 <body>
+    <header>
+        <h1>Salvador</h1>
+        <nav>
+            <a href="/admin/habitaciones">Habitaciones</a>
+            <a href="/admin/comida">Menú</a>
+            <a href="/logout">Salir</a>
+        </nav>
+    </header>
+
     <main>
         <h1>Bienvenido Administrador</h1>
-        <a href="/logout">Cerrar Sesión</a>
+        <h3>Panel General - Sistema de Gestión del Hotel</h3>
+
+        <div class="container">
+            <div class="card">
+                <span class="imgCircle">
+                    <img src="{{ url_for('static', filename = 'icons/cama.png') }}">
+                </span>
+
+                <h2>Control de Cuartos</h2>
+
+                <p>
+                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Nostrum quibusdam harum iste omnis ea culpa consequatur architecto quis nisi ipsum.
+                </p>
+
+                <a href="" class="navy">Ver Habitaciones</a>
+            </div>
+            
+            <div class="card">
+                <span class="imgCircle">
+                    <img src="{{ url_for('static', filename = 'icons/cubiertos.png') }}">
+                </span>
+
+                <h2>Gestión del Menú</h2>
+
+                <p>
+                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Repellat molestias praesentium delectus sunt totam sint impedit dicta maiores ratione odit.
+                </p>
+
+                <a href="" class="gold">Ver Menú</a>
+            </div>
+        </div>
     </main>
 </body>
 </html>
