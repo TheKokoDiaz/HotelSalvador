@@ -17,7 +17,7 @@ def get_db_connection():
     return pymysql.connect(
         host     = "127.0.0.1",
         user     = "root",
-        password = "",
+        password = "12345",
         database = "DB_SistemaHotelero",
         port     = 3306,
         cursorclass = pymysql.cursors.DictCursor # Transforma las tuplas en diccionarios para Jinja
@@ -201,8 +201,29 @@ def cancelar_reservacion(res_id):
 
 @app.route("/cliente/menu")
 def cliente_menu():
-    return "Vista de menú (SIS_Platillo / SIS_Pedido) — pendiente."
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """SELECT PLA_id, PLA_nombre, PLA_tipo, PLA_precio, PLA_foto
+           FROM SIS_Platillo
+           ORDER BY PLA_tipo, PLA_nombre"""
+    )
+    platillos_db = cursor.fetchall()
+    cursor.close()
+    conn.close()
 
+    # Categorías únicas (en orden de aparición) para armar los botones de filtro
+    categorias = []
+    for p in platillos_db:
+        if p["PLA_tipo"] not in categorias:
+            categorias.append(p["PLA_tipo"])
+
+    return render_template(
+        "cliente_menu.html",
+        platillos=platillos_db,
+        categorias=categorias,
+        active="menu",
+    )
 @app.route("/cliente/cuenta")
 def cliente_cuenta():
     return "Vista de la cuenta del cliente — pendiente."

@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Menú — Hotel Salvador{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/formulario.css') }}">
+<style>
+    .menu-filtros {
+        max-width: 1180px;
+        margin: 0 auto 28px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .menu-filtro-btn {
+        border: 1px solid #e2e5ea;
+        background: #fff;
+        color: #1c2534;
+        font-size: 0.8rem;
+        padding: 7px 18px;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: background .15s ease, color .15s ease, border-color .15s ease;
+    }
+    .menu-filtro-btn:hover { border-color: var(--navy-light); }
+    .menu-filtro-btn.activo {
+        background: var(--navy);
+        border-color: var(--navy);
+        color: #fff;
+    }
+
+    .dishes-grid {
+        max-width: 1180px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 24px;
+    }
+    .dish-card {
+        background: #fff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(20,30,45,0.05);
+    }
+    .dish-card__img {
+        width: 100%;
+        height: 160px;
+        object-fit: cover;
+        background: #e5e7eb;
+    }
+    .dish-card__body { padding: 16px 18px 20px; }
+    .dish-card__tipo { font-size: 0.72rem; color: #9ca3af; letter-spacing: 0.5px; text-transform: uppercase; }
+    .dish-card__nombre { font-size: 1.05rem; font-weight: 600; color: #1c2534; margin: 4px 0 12px; }
+    .dish-card__footer { display: flex; align-items: center; justify-content: space-between; }
+    .dish-card__precio { font-weight: 700; color: #1c2534; }
+    .dish-card__precio small { font-weight: 400; color: #9ca3af; font-size: 0.72rem; display: block; }
+    .btn-agregar {
+        display: inline-block;
+        background: var(--navy);
+        color: #fff;
+        font-size: 0.82rem;
+        padding: 8px 16px;
+        border-radius: 7px;
+        border: none;
+        cursor: pointer;
+    }
+    .btn-agregar:hover { background: var(--navy-light); }
+    .no-dishes {
+        max-width: 1180px;
+        margin: 40px auto;
+        text-align: center;
+        color: #6b7280;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+    <div class="page-header">
+        <h1>Nuestro Portafolio Gourmet</h1>
+        <p>Explora la selección de platillos diseñados por nuestros chefs ejecutivos.</p>
+    </div>
+
+    {% if platillos %}
+    <div class="menu-filtros" id="menu-filtros">
+        <button type="button" class="menu-filtro-btn activo" data-tipo="Todos">Todos</button>
+        {% for cat in categorias %}
+        <button type="button" class="menu-filtro-btn" data-tipo="{{ cat }}">{{ cat }}</button>
+        {% endfor %}
+    </div>
+
+    <div class="dishes-grid" id="dishes-grid">
+        {% for pla in platillos %}
+        <div class="dish-card" data-tipo="{{ pla['PLA_tipo'] }}">
+            {% if pla['PLA_foto'] %}
+                <img class="dish-card__img" src="{{ url_for('static', filename='img/platillos/' + pla['PLA_foto']) }}" alt="{{ pla['PLA_nombre'] }}">
+            {% else %}
+                <img class="dish-card__img" src="{{ url_for('static', filename='img/hero-hotel.jpg') }}" alt="{{ pla['PLA_nombre'] }}">
+            {% endif %}
+            <div class="dish-card__body">
+                <div class="dish-card__tipo">{{ pla['PLA_tipo'] }}</div>
+                <div class="dish-card__nombre">{{ pla['PLA_nombre'] }}</div>
+                <div class="dish-card__footer">
+                    <div class="dish-card__precio">
+                        ${{ "%.2f"|format(pla['PLA_precio']) }}
+                    </div>
+                    <button type="button" class="btn-agregar">Agregar</button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="no-dishes">Todavía no hay platillos registrados en el menú.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const botonesFiltro = document.querySelectorAll('.menu-filtro-btn');
+    const tarjetasPlatillo = document.querySelectorAll('#dishes-grid .dish-card');
+
+    botonesFiltro.forEach(btn => {
+        btn.addEventListener('click', () => {
+            botonesFiltro.forEach(b => b.classList.remove('activo'));
+            btn.classList.add('activo');
+
+            const tipo = btn.dataset.tipo;
+            tarjetasPlatillo.forEach(card => {
+                card.style.display = (tipo === 'Todos' || card.dataset.tipo === tipo) ? '' : 'none';
+            });
+        });
+    });
+</script>
+{% endblock %}
