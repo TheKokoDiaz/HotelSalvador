@@ -1,0 +1,72 @@
+:root{
+    --yellow: #ffe791;
+    --white: #ffffff;
+}
+
+*{
+    box-sizing: border-box;
+}
+
+body{
+    margin: 0;
+    width: 100vw;
+    height: 100vh;
+
+    background-size: cover;
+    background-position: center;
+    background-image: url("../img/salvadorsHotel.png");
+}
+
+header{
+    width: 100vw;
+
+    display: flex;
+    align-items: center;
+    justify-content: end;
+
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 1.2rem 1rem;
+
+    gap: 2rem;
+
+    a{
+        color: var(--white);
+        text-decoration: none;
+    }
+    
+    a:hover{
+        color: var(--yellow);
+        text-decoration: underline;
+    }
+
+    .mainOption{
+        position: absolute;
+        left: 2rem;
+
+        font-size: 1.5rem;
+        font-style: italic;
+        color: var(--yellow);
+    }
+}
+
+main{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+
+    h1{
+        color: var(--yellow);
+
+        font-size: 4rem;
+        font-style: italic;
+        font-weight: normal;
+
+        margin-bottom: 0.5rem;
+    }
+    
+    span{
+        color: var(--white);
+        font-size: 2.5rem;
+    }
+}

@@ -7,11 +7,23 @@
 
     <!-- Icono de la pestaña -->
     <link rel="shortcut icon" href="{{ url_for('static', filename = 'icons/shortcutIcon.png') }}" type="image/x-icon">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename = 'css/index.css') }}">
 </head>
 <body>
-    <main>
-        <h1>Página Principal</h1>
+    <header>
+        <a href="/" class="mainOption">Salvador</a>
+
+        <a href="/">Inicio</a>
+        <!-- <a href="">Servicios</a> -->
         <a href="/login">Iniciar Sesión</a>
+        <a href="/register">Registrarse</a>
+    </header>
+
+    <main>
+        <h1>Salvador</h1>
+        <span>Servicio de Hoteleria y Buffet</span>
     </main>
 </body>
 </html>
