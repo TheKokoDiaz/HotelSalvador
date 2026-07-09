@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Ticket de Confirmación — Hotel Salvador{% endblock %}
+
+{% block extra_css %}
+<style>
+    .ticket-wrap {
+        max-width: 560px;
+        margin: 40px auto;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(20,30,45,0.06);
+        padding: 32px 34px;
+    }
+    .ticket-header {
+        text-align: center;
+        border-bottom: 1px dashed #d1d5db;
+        padding-bottom: 20px;
+        margin-bottom: 20px;
+    }
+    .ticket-header .check {
+        width: 46px; height: 46px;
+        border-radius: 50%;
+        background: #ecfdf5;
+        color: #047857;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 22px;
+        margin: 0 auto 12px;
+    }
+    .ticket-header h1 { font-size: 1.1rem; margin: 0 0 4px; color: #1c2534; }
+    .ticket-header p { font-size: 0.8rem; color: #9ca3af; margin: 0; }
+
+    .ticket-seccion { margin-bottom: 18px; }
+    .ticket-seccion h4 {
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        color: #9ca3af;
+        margin: 0 0 10px;
+    }
+    .ticket-linea {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        color: #1c2534;
+        padding: 5px 0;
+    }
+    .ticket-linea .sub { color: #9ca3af; font-size: 0.75rem; }
+
+    .ticket-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px dashed #d1d5db;
+        padding-top: 16px;
+        margin-top: 10px;
+    }
+    .ticket-total .monto { font-size: 1.3rem; font-weight: 700; color: #1c2534; }
+
+    .ticket-folio {
+        text-align: center;
+        font-size: 0.72rem;
+        color: #9ca3af;
+        margin-top: 22px;
+    }
+
+    .btn-volver {
+        display: block;
+        text-align: center;
+        margin-top: 24px;
+        padding: 12px;
+        border-radius: 8px;
+        background: var(--navy);
+        color: #fff;
+        text-decoration: none;
+        font-size: 0.85rem;
+    }
+    .btn-volver:hover { background: var(--navy-light); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ticket-wrap">
+    <div class="ticket-header">
+        <div class="check">&#10003;</div>
+        <h1>¡Tu cuenta ha sido confirmada!</h1>
+        <p>Hotel Salvador agradece tu preferencia</p>
+    </div>
+
+    {% if recibo['HAB_numero'] %}
+    <div class="ticket-seccion">
+        <h4>Habitación</h4>
+        <div class="ticket-linea">
+            <span>Habitación #{{ recibo['HAB_numero'] }} — {{ recibo['HAB_tipo_habitacion'] }} ({{ recibo['RES_num_dias'] }} noche(s))</span>
+            <span>${{ "%.2f"|format(recibo['RES_total']) }}</span>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if platillos %}
+    <div class="ticket-seccion">
+        <h4>Platillos</h4>
+        {% for pla in platillos %}
+        <div class="ticket-linea">
+            <span>{{ pla['PLA_nombre'] }} {% if pla['DET_cantidad'] > 1 %}× {{ pla['DET_cantidad'] }}{% endif %}</span>
+            <span>${{ "%.2f"|format(pla['subtotal']) }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="ticket-total">
+        <span style="font-size:0.85rem; color:#4b5563;">Total Pagado</span>
+        <div class="monto">${{ "%.2f"|format(recibo['REC_monto_total']) }} <small style="font-size:0.65rem; font-weight:400; color:#9ca3af;">MXN</small></div>
+    </div>
+
+    <div class="ticket-folio">Folio de recibo: #{{ recibo['REC_id'] }}</div>
+
+    <a href="{{ url_for('index') }}" class="btn-volver">Volver al Inicio</a>
+</div>
+{% endblock %}

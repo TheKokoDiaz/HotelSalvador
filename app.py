@@ -224,9 +224,318 @@ def cliente_menu():
         categorias=categorias,
         active="menu",
     )
+"""
+=====================================================================
+ RUTAS DEL CHECKOUT / "SU CUENTA"
+ Reemplaza tu ruta placeholder:
+
+    @app.route("/cliente/cuenta")
+    def cliente_cuenta():
+        return "Vista de la cuenta del cliente — pendiente."
+
+ por TODO el bloque de abajo.
+=====================================================================
+"""
+
+# -------------------------------------------------------------------
+# Vista principal de checkout: reservación activa + pedido activo
+# -------------------------------------------------------------------
 @app.route("/cliente/cuenta")
 def cliente_cuenta():
-    return "Vista de la cuenta del cliente — pendiente."
+    cliente_id = session.get("id")
+    if not cliente_id:
+        return redirect(url_for("login"))
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Reservación activa: la más reciente que aún no tiene un recibo asociado
+    cursor.execute(
+        """SELECT r.RES_id, r.RES_num_dias, r.RES_total,
+                  h.HAB_numero, h.HAB_tipo_habitacion, h.HAB_tipo_cama, h.HAB_precio
+           FROM SIS_Reservacion r
+           JOIN SIS_Habitacion h ON r.HAB_id_fk = h.HAB_id
+           WHERE r.CLI_id_fk = %s
+           AND r.RES_id NOT IN (SELECT RES_id_fk FROM SIS_Recibo WHERE RES_id_fk IS NOT NULL)
+           ORDER BY r.RES_id DESC LIMIT 1""",
+        (cliente_id,)
+    )
+    reservacion = cursor.fetchone()
+
+    # Pedido activo: el más reciente que aún no tiene un recibo asociado
+    cursor.execute(
+        """SELECT PED_id, PED_total FROM SIS_Pedido
+           WHERE CLI_id_fk = %s
+           AND PED_id NOT IN (SELECT PED_id_fk FROM SIS_Recibo WHERE PED_id_fk IS NOT NULL)
+           ORDER BY PED_id DESC LIMIT 1""",
+        (cliente_id,)
+    )
+    pedido = cursor.fetchone()
+
+    detalle_platillos = []
+    if pedido:
+        cursor.execute(
+            """SELECT p.PLA_id, p.PLA_nombre, p.PLA_tipo, p.PLA_precio, dp.DET_cantidad,
+                      (p.PLA_precio * dp.DET_cantidad) AS subtotal
+               FROM SIS_Detalle_Pedido dp
+               JOIN SIS_Platillo p ON dp.PLA_id_fk = p.PLA_id
+               WHERE dp.PED_id_fk = %s""",
+            (pedido["PED_id"],)
+        )
+        detalle_platillos = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    costo_habitacion = float(reservacion["RES_total"]) if reservacion else 0.0
+    costo_comida = float(pedido["PED_total"]) if pedido else 0.0
+    total_general = costo_habitacion + costo_comida
+
+    return render_template(
+        "cliente_cuenta.html",
+        reservacion=reservacion,
+        pedido=pedido,
+        platillos=detalle_platillos,
+        costo_habitacion=costo_habitacion,
+        costo_comida=costo_comida,
+        total_general=total_general,
+        active="cuenta",
+    )
+
+
+# -------------------------------------------------------------------
+# Agrega un platillo al pedido activo del cliente (llamado desde el
+# botón "Agregar" en cliente_menu.html vía fetch/AJAX)
+# -------------------------------------------------------------------
+@app.route("/cliente/pedido/agregar/<int:pla_id>", methods=["POST"])
+def agregar_platillo(pla_id):
+    cliente_id = session.get("id")
+    if not cliente_id or session.get("rol") != "Cliente":
+        return jsonify({"ok": False, "mensaje": "Debes iniciar sesión como cliente."}), 401
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Buscamos si ya tiene un pedido abierto (sin recibo asociado)
+    cursor.execute(
+        """SELECT PED_id FROM SIS_Pedido
+           WHERE CLI_id_fk = %s
+           AND PED_id NOT IN (SELECT PED_id_fk FROM SIS_Recibo WHERE PED_id_fk IS NOT NULL)
+           ORDER BY PED_id DESC LIMIT 1""",
+        (cliente_id,)
+    )
+    pedido = cursor.fetchone()
+
+    if pedido:
+        ped_id = pedido["PED_id"]
+    else:
+        cursor.execute("INSERT INTO SIS_Pedido (CLI_id_fk, PED_total) VALUES (%s, 0)", (cliente_id,))
+        ped_id = cursor.lastrowid
+
+    # Si el platillo ya estaba en el pedido, solo incrementamos la cantidad
+    cursor.execute(
+        "SELECT DET_cantidad FROM SIS_Detalle_Pedido WHERE PED_id_fk = %s AND PLA_id_fk = %s",
+        (ped_id, pla_id)
+    )
+    detalle = cursor.fetchone()
+
+    if detalle:
+        cursor.execute(
+            "UPDATE SIS_Detalle_Pedido SET DET_cantidad = DET_cantidad + 1 WHERE PED_id_fk = %s AND PLA_id_fk = %s",
+            (ped_id, pla_id)
+        )
+    else:
+        cursor.execute(
+            "INSERT INTO SIS_Detalle_Pedido (PED_id_fk, PLA_id_fk, DET_cantidad) VALUES (%s, %s, 1)",
+            (ped_id, pla_id)
+        )
+
+    # Recalculamos el total del pedido a partir del detalle
+    cursor.execute(
+        """UPDATE SIS_Pedido SET PED_total = (
+               SELECT COALESCE(SUM(dp.DET_cantidad * pl.PLA_precio), 0)
+               FROM SIS_Detalle_Pedido dp
+               JOIN SIS_Platillo pl ON dp.PLA_id_fk = pl.PLA_id
+               WHERE dp.PED_id_fk = %s
+           ) WHERE PED_id = %s""",
+        (ped_id, ped_id)
+    )
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return jsonify({"ok": True, "mensaje": "Platillo agregado a tu cuenta."})
+
+
+# -------------------------------------------------------------------
+# Quita un platillo del pedido activo (botón "Quitar" en cliente_cuenta.html)
+# -------------------------------------------------------------------
+@app.route("/cliente/pedido/eliminar/<int:pla_id>", methods=["POST"])
+def eliminar_platillo(pla_id):
+    cliente_id = session.get("id")
+    if not cliente_id:
+        return redirect(url_for("login"))
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """SELECT PED_id FROM SIS_Pedido
+           WHERE CLI_id_fk = %s
+           AND PED_id NOT IN (SELECT PED_id_fk FROM SIS_Recibo WHERE PED_id_fk IS NOT NULL)
+           ORDER BY PED_id DESC LIMIT 1""",
+        (cliente_id,)
+    )
+    pedido = cursor.fetchone()
+
+    if pedido:
+        ped_id = pedido["PED_id"]
+        cursor.execute(
+            "DELETE FROM SIS_Detalle_Pedido WHERE PED_id_fk = %s AND PLA_id_fk = %s",
+            (ped_id, pla_id)
+        )
+        cursor.execute(
+            """UPDATE SIS_Pedido SET PED_total = (
+                   SELECT COALESCE(SUM(dp.DET_cantidad * pl.PLA_precio), 0)
+                   FROM SIS_Detalle_Pedido dp
+                   JOIN SIS_Platillo pl ON dp.PLA_id_fk = pl.PLA_id
+                   WHERE dp.PED_id_fk = %s
+               ) WHERE PED_id = %s""",
+            (ped_id, ped_id)
+        )
+        conn.commit()
+
+    cursor.close()
+    conn.close()
+
+    return redirect(url_for("cliente_cuenta"))
+
+
+# -------------------------------------------------------------------
+# Quita la habitación reservada de la cuenta activa (botón "Quitar"
+# junto a la habitación en cliente_cuenta.html)
+# -------------------------------------------------------------------
+@app.route("/cliente/cuenta/eliminar_habitacion/<int:res_id>", methods=["POST"])
+def eliminar_habitacion_cuenta(res_id):
+    cliente_id = session.get("id")
+    if not cliente_id:
+        return redirect(url_for("login"))
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "DELETE FROM SIS_Reservacion WHERE RES_id = %s AND CLI_id_fk = %s",
+        (res_id, cliente_id)
+    )
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return redirect(url_for("cliente_cuenta"))
+
+
+# -------------------------------------------------------------------
+# Confirma el pago: crea un SIS_Recibo ligado a la reservación y/o
+# pedido activos, lo que los "cierra" (dejan de contar como activos)
+# -------------------------------------------------------------------
+@app.route("/cliente/cuenta/confirmar", methods=["POST"])
+def confirmar_pago():
+    cliente_id = session.get("id")
+    if not cliente_id:
+        return redirect(url_for("login"))
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """SELECT RES_id, RES_total FROM SIS_Reservacion
+           WHERE CLI_id_fk = %s
+           AND RES_id NOT IN (SELECT RES_id_fk FROM SIS_Recibo WHERE RES_id_fk IS NOT NULL)
+           ORDER BY RES_id DESC LIMIT 1""",
+        (cliente_id,)
+    )
+    reservacion = cursor.fetchone()
+
+    cursor.execute(
+        """SELECT PED_id, PED_total FROM SIS_Pedido
+           WHERE CLI_id_fk = %s
+           AND PED_id NOT IN (SELECT PED_id_fk FROM SIS_Recibo WHERE PED_id_fk IS NOT NULL)
+           ORDER BY PED_id DESC LIMIT 1""",
+        (cliente_id,)
+    )
+    pedido = cursor.fetchone()
+
+    if not reservacion and not pedido:
+        cursor.close()
+        conn.close()
+        return redirect(url_for("cliente_cuenta"))
+
+    costo_habitacion = float(reservacion["RES_total"]) if reservacion else 0.0
+    costo_comida = float(pedido["PED_total"]) if pedido else 0.0
+    total = costo_habitacion + costo_comida
+
+    cursor.execute(
+        """INSERT INTO SIS_Recibo (REC_costo_comida, REC_costo_bebidas, REC_monto_total, RES_id_fk, PED_id_fk)
+           VALUES (%s, 0, %s, %s, %s)""",
+        (
+            costo_comida,
+            total,
+            reservacion["RES_id"] if reservacion else None,
+            pedido["PED_id"] if pedido else None,
+        )
+    )
+    conn.commit()
+    rec_id = cursor.lastrowid
+    cursor.close()
+    conn.close()
+
+    return redirect(url_for("cliente_ticket", rec_id=rec_id))
+
+
+# -------------------------------------------------------------------
+# Muestra el ticket final tras confirmar el pago
+# -------------------------------------------------------------------
+@app.route("/cliente/ticket/<int:rec_id>")
+def cliente_ticket(rec_id):
+    cliente_id = session.get("id")
+    if not cliente_id:
+        return redirect(url_for("login"))
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """SELECT rec.REC_id, rec.REC_monto_total, rec.RES_id_fk, rec.PED_id_fk,
+                  r.RES_num_dias, r.RES_total,
+                  h.HAB_numero, h.HAB_tipo_habitacion
+           FROM SIS_Recibo rec
+           LEFT JOIN SIS_Reservacion r ON rec.RES_id_fk = r.RES_id
+           LEFT JOIN SIS_Habitacion h ON r.HAB_id_fk = h.HAB_id
+           WHERE rec.REC_id = %s""",
+        (rec_id,)
+    )
+    recibo = cursor.fetchone()
+
+    detalle_platillos = []
+    if recibo and recibo["PED_id_fk"]:
+        cursor.execute(
+            """SELECT p.PLA_nombre, p.PLA_precio, dp.DET_cantidad,
+                      (p.PLA_precio * dp.DET_cantidad) AS subtotal
+               FROM SIS_Detalle_Pedido dp
+               JOIN SIS_Platillo p ON dp.PLA_id_fk = p.PLA_id
+               WHERE dp.PED_id_fk = %s""",
+            (recibo["PED_id_fk"],)
+        )
+        detalle_platillos = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    if not recibo:
+        return redirect(url_for("cliente_cuenta"))
+
+    return render_template("cliente_ticket.html", recibo=recibo, platillos=detalle_platillos)
 
 
 # --------------------------------------------------------------------------

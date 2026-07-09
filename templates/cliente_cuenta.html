@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}Su Cuenta — Hotel Salvador{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/formulario.css') }}">
+<style>
+    .checkout-grid {
+        max-width: 1180px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 28px;
+        align-items: start;
+    }
+    @media (max-width: 900px) {
+        .checkout-grid { grid-template-columns: 1fr; }
+    }
+
+    .cuenta-card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 22px 24px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(20,30,45,0.05);
+        margin-bottom: 22px;
+    }
+    .cuenta-card h3 {
+        font-size: 0.92rem;
+        color: #1c2534;
+        margin: 0 0 16px;
+        letter-spacing: .3px;
+    }
+
+    .campo-solo-lectura { margin-bottom: 14px; }
+    .campo-solo-lectura label {
+        display: block;
+        font-size: 0.7rem;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        margin-bottom: 5px;
+    }
+    .campo-solo-lectura .valor {
+        border: 1px solid #e2e5ea;
+        border-radius: 7px;
+        padding: 9px 12px;
+        font-size: 0.9rem;
+        color: #1c2534;
+        background: #f9fafb;
+    }
+
+    .linea-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f1f3;
+        gap: 12px;
+    }
+    .linea-item:last-of-type { border-bottom: none; }
+    .linea-item__titulo { font-weight: 600; color: #1c2534; font-size: 0.9rem; }
+    .linea-item__sub { font-size: 0.78rem; color: #9ca3af; margin-top: 2px; }
+    .linea-item__derecha { display: flex; align-items: center; gap: 14px; }
+    .linea-item__precio { font-weight: 700; color: #1c2534; font-size: 0.9rem; white-space: nowrap; }
+
+    .btn-quitar {
+        background: none;
+        border: none;
+        color: #b91c1c;
+        font-size: 0.75rem;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 6px;
+        white-space: nowrap;
+    }
+    .btn-quitar:hover { background: #fef2f2; }
+
+    .sin-datos {
+        color: #9ca3af;
+        font-size: 0.85rem;
+        padding: 8px 0;
+    }
+
+    .resumen-linea {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        color: #4b5563;
+        padding: 5px 0;
+    }
+    .resumen-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid #e2e5ea;
+    }
+    .resumen-total .monto {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #1c2534;
+    }
+    .resumen-total .monto small {
+        font-weight: 400;
+        font-size: 0.65rem;
+        color: #9ca3af;
+    }
+
+    .botones-checkout {
+        display: flex;
+        gap: 12px;
+        margin-top: 18px;
+    }
+    .btn-modificar {
+        flex: 1;
+        text-align: center;
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid #e2e5ea;
+        background: #f3f4f6;
+        color: #1c2534;
+        font-size: 0.85rem;
+        text-decoration: none;
+    }
+    .btn-confirmar {
+        flex: 1.4;
+        text-align: center;
+        padding: 12px;
+        border-radius: 8px;
+        border: none;
+        background: var(--navy);
+        color: #fff;
+        font-size: 0.85rem;
+        cursor: pointer;
+    }
+    .btn-confirmar:hover { background: var(--navy-light); }
+
+    .cuenta-vacia {
+        max-width: 1180px;
+        margin: 40px auto;
+        text-align: center;
+        color: #6b7280;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+    <div class="page-header">
+        <h1>Confirmación de Reserva &amp; Checkout</h1>
+        <p>Revisa tus datos y consumos antes de confirmar tu cuenta.</p>
+    </div>
+
+    {% if not reservacion and not platillos %}
+    <div class="cuenta-vacia">
+        Todavía no tienes ninguna habitación reservada ni platillos agregados a tu cuenta.
+        <br><br>
+        <a href="{{ url_for('cliente_habitaciones') }}" class="btn-modificar" style="display:inline-block; max-width:220px;">Ver Habitaciones</a>
+        <a href="{{ url_for('cliente_menu') }}" class="btn-modificar" style="display:inline-block; max-width:220px;">Ver Menú</a>
+    </div>
+    {% else %}
+
+    <div class="checkout-grid">
+
+        <!-- ===================== COLUMNA IZQUIERDA ===================== -->
+        <div>
+            <div class="cuenta-card">
+                <h3>1. Datos del Huésped</h3>
+                <div class="campo-solo-lectura">
+                    <label>Nombre completo</label>
+                    <div class="valor">{{ session.get('nombre', '—') }}</div>
+                </div>
+                <div class="campo-solo-lectura">
+                    <label>Correo electrónico</label>
+                    <div class="valor">{{ session.get('correo', '—') }}</div>
+                </div>
+                <div class="campo-solo-lectura">
+                    <label>Teléfono</label>
+                    <div class="valor">{{ session.get('telefono', '—') }}</div>
+                </div>
+            </div>
+
+            {% if reservacion %}
+            <div class="cuenta-card">
+                <h3>2. Habitación Reservada</h3>
+                <div class="linea-item">
+                    <div>
+                        <div class="linea-item__titulo">Habitación #{{ reservacion['HAB_numero'] }} — {{ reservacion['HAB_tipo_habitacion'] }}</div>
+                        <div class="linea-item__sub">{{ reservacion['HAB_tipo_cama'] }} · {{ reservacion['RES_num_dias'] }} noche(s)</div>
+                    </div>
+                    <div class="linea-item__derecha">
+                        <div class="linea-item__precio">${{ "%.2f"|format(reservacion['RES_total']) }}</div>
+                        <form method="POST" action="{{ url_for('eliminar_habitacion_cuenta', res_id=reservacion['RES_id']) }}"
+                              onsubmit="return confirm('¿Eliminar esta habitación de tu cuenta?');">
+                            <button type="submit" class="btn-quitar">Quitar</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- ===================== COLUMNA DERECHA ===================== -->
+        <div>
+            <div class="cuenta-card">
+                <h3>3. Platillos Solicitados</h3>
+
+                {% if platillos %}
+                    {% for pla in platillos %}
+                    <div class="linea-item">
+                        <div>
+                            <div class="linea-item__titulo">{{ pla['PLA_nombre'] }} {% if pla['DET_cantidad'] > 1 %}× {{ pla['DET_cantidad'] }}{% endif %}</div>
+                            <div class="linea-item__sub">{{ pla['PLA_tipo'] }} · ${{ "%.2f"|format(pla['PLA_precio']) }} c/u</div>
+                        </div>
+                        <div class="linea-item__derecha">
+                            <div class="linea-item__precio">${{ "%.2f"|format(pla['subtotal']) }}</div>
+                            <form method="POST" action="{{ url_for('eliminar_platillo', pla_id=pla['PLA_id']) }}">
+                                <button type="submit" class="btn-quitar">Quitar</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="sin-datos">No has agregado platillos a tu cuenta.</p>
+                {% endif %}
+            </div>
+
+            <div class="cuenta-card">
+                <h3>Resumen de Cuenta</h3>
+                <div class="resumen-linea">
+                    <span>Subtotal Habitación</span>
+                    <span>${{ "%.2f"|format(costo_habitacion) }}</span>
+                </div>
+                <div class="resumen-linea">
+                    <span>Subtotal Alimentos</span>
+                    <span>${{ "%.2f"|format(costo_comida) }}</span>
+                </div>
+                <div class="resumen-total">
+                    <span style="font-size:0.85rem; color:#4b5563;">Total Estimado</span>
+                    <div class="monto">${{ "%.2f"|format(total_general) }} <small>MXN</small></div>
+                </div>
+
+                <div class="botones-checkout">
+                    <a href="{{ url_for('cliente_menu') }}" class="btn-modificar">Modificar Pedido</a>
+                    <form method="POST" action="{{ url_for('confirmar_pago') }}" style="flex:1.4;">
+                        <button type="submit" class="btn-confirmar" style="width:100%;">Confirmar Pago &amp; Reservar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

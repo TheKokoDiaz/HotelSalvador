@@ -65,6 +65,7 @@
         cursor: pointer;
     }
     .btn-agregar:hover { background: var(--navy-light); }
+    .btn-agregar:disabled { opacity: 0.7; cursor: default; }
     .no-dishes {
         max-width: 1180px;
         margin: 40px auto;
@@ -104,7 +105,7 @@
                     <div class="dish-card__precio">
                         ${{ "%.2f"|format(pla['PLA_precio']) }}
                     </div>
-                    <button type="button" class="btn-agregar">Agregar</button>
+                    <button type="button" class="btn-agregar" data-id="{{ pla['PLA_id'] }}">Agregar</button>
                 </div>
             </div>
         </div>
@@ -114,21 +115,52 @@
     <p class="no-dishes">Todavía no hay platillos registrados en el menú.</p>
     {% endif %}
 </div>
-{% endblock %}
 
-{% block extra_js %}
 <script>
-    const botonesFiltro = document.querySelectorAll('.menu-filtro-btn');
-    const tarjetasPlatillo = document.querySelectorAll('#dishes-grid .dish-card');
+    document.addEventListener('DOMContentLoaded', function () {
+        const botonesFiltro = document.querySelectorAll('.menu-filtro-btn');
+        const tarjetasPlatillo = document.querySelectorAll('#dishes-grid .dish-card');
 
-    botonesFiltro.forEach(btn => {
-        btn.addEventListener('click', () => {
-            botonesFiltro.forEach(b => b.classList.remove('activo'));
-            btn.classList.add('activo');
+        botonesFiltro.forEach(btn => {
+            btn.addEventListener('click', () => {
+                botonesFiltro.forEach(b => b.classList.remove('activo'));
+                btn.classList.add('activo');
 
-            const tipo = btn.dataset.tipo;
-            tarjetasPlatillo.forEach(card => {
-                card.style.display = (tipo === 'Todos' || card.dataset.tipo === tipo) ? '' : 'none';
+                const tipo = btn.dataset.tipo;
+                tarjetasPlatillo.forEach(card => {
+                    card.style.display = (tipo === 'Todos' || card.dataset.tipo === tipo) ? '' : 'none';
+                });
+            });
+        });
+
+        // Conecta cada botón "Agregar" con /cliente/pedido/agregar/<id>
+        document.querySelectorAll('.btn-agregar').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const platilloId = btn.dataset.id;
+                const textoOriginal = btn.textContent;
+
+                btn.disabled = true;
+                btn.textContent = 'Agregando...';
+
+                fetch(`/cliente/pedido/agregar/${platilloId}`, {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    btn.textContent = data.ok ? 'Agregado ✓' : 'Error';
+                    setTimeout(() => {
+                        btn.textContent = textoOriginal;
+                        btn.disabled = false;
+                    }, 1500);
+                })
+                .catch(() => {
+                    btn.textContent = 'Error';
+                    setTimeout(() => {
+                        btn.textContent = textoOriginal;
+                        btn.disabled = false;
+                    }, 1500);
+                });
             });
         });
     });
