@@ -91,7 +91,7 @@ INSERT INTO SIS_Administrador VALUES
 ("0", "Ryu", "ryu@gmail.com", "1234567890");
 
 INSERT INTO SIS_Habitacion (HAB_numero, HAB_tipo_habitacion, HAB_tipo_cama, HAB_precio, HAB_estado, HAB_foto) VALUES
-("101", "Individual", "1 cama matrimonial", 1500.00, "Disponible", NULL),
+("101", "Individual", "1 cama individual", 1500.00, "Disponible", NULL),
 ("102", "Doble", "2 camas individuales", 2200.00, "Disponible", NULL),
 ("103", "Suite", "King Size", 4500.00, "Disponible", NULL),
 ("104", "Doble", "1 cama matrimonial", 2000.00, "Disponible", NULL);
@@ -179,6 +179,23 @@ END $$
 DELIMITER ;
 
 -- CALL SP_RegistrarCliente("Kakaroto", "goku@gmail.com", "7751958847", "1234567890");
+
+-- Modificar el estado de una habitación
+DELIMITER $$
+CREATE PROCEDURE SP_EstadoHabitacion
+(
+	IN SP_reservacion		INT,
+    IN SP_estado			VARCHAR(20)
+)
+BEGIN
+	DECLARE SP_id INT;
+	SELECT HAB_id_fk INTO SP_id FROM SIS_Reservacion WHERE RES_id = SP_reservacion;
+    
+	UPDATE SIS_Habitacion SET HAB_estado = SP_estado WHERE HAB_id = SP_id;
+END $$
+DELIMITER ;
+
+-- CALL SP_EstadoHabitacion(2, "Ocupado");
 
 -- Plantilla 
 /*

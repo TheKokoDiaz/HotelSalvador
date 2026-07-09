@@ -188,7 +188,11 @@ def cliente_reservaciones():
 def cancelar_reservacion(res_id):
     conn = get_db_connection()
     cursor = conn.cursor()
-    # El "AND CLI_id_fk = %s" evita que un cliente cancele la reservación de otro
+    
+    # Libera a la habitación
+    cursor.callproc("SP_EstadoHabitacion", [res_id, "Disponible"])
+
+    # Elimina la reservación
     cursor.execute(
         "DELETE FROM SIS_Reservacion WHERE RES_id = %s AND CLI_id_fk = %s",
         (res_id, session["id"])
@@ -424,10 +428,16 @@ def eliminar_habitacion_cuenta(res_id):
 
     conn = get_db_connection()
     cursor = conn.cursor()
+
+    # Libera a la habitación
+    cursor.callproc("SP_EstadoHabitacion", [res_id, "Disponible"])
+
+    # Elimina la reservación
     cursor.execute(
         "DELETE FROM SIS_Reservacion WHERE RES_id = %s AND CLI_id_fk = %s",
         (res_id, cliente_id)
     )
+
     conn.commit()
     cursor.close()
     conn.close()
@@ -475,6 +485,7 @@ def confirmar_pago():
     costo_comida = float(pedido["PED_total"]) if pedido else 0.0
     total = costo_habitacion + costo_comida
 
+    # Crea el recibo correspondiente
     cursor.execute(
         """INSERT INTO SIS_Recibo (REC_costo_comida, REC_costo_bebidas, REC_monto_total, RES_id_fk, PED_id_fk)
            VALUES (%s, 0, %s, %s, %s)""",
@@ -485,6 +496,10 @@ def confirmar_pago():
             pedido["PED_id"] if pedido else None,
         )
     )
+
+    # Actualiza el estado de la habitación
+    cursor.callproc("SP_EstadoHabitacion", [reservacion["RES_id"], "Ocupado"])
+
     conn.commit()
     rec_id = cursor.lastrowid
     cursor.close()
@@ -537,13 +552,6 @@ def cliente_ticket(rec_id):
 
     return render_template("cliente_ticket.html", recibo=recibo, platillos=detalle_platillos)
 
-
-# --------------------------------------------------------------------------
-# AGREGAR ESTO A app.py
-# 1. Al inicio del archivo, junto a tus demás imports, agrega:
-#       from datetime import datetime
-# 2. Pega estas dos rutas donde tengas las demás rutas de cliente.
-# --------------------------------------------------------------------------
 
 # Muestra el formulario de solicitud para UNA habitación específica
 # (se llega aquí después de darle click a una habitación en el listado)
