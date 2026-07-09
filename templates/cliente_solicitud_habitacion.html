@@ -71,6 +71,8 @@
                     <input type="text" value="{{ habitacion['HAB_tipo_cama'] }}" disabled>
                 </div>
 
+                <!-- RECORTAMOS ESTA PARTE, Se incorporará luego si nos da tiempo -->
+                <!--
                 <div class="stepper">
                     <div>
                         <label style="display:block; font-size:0.8rem; color:#4b5563; margin-bottom:6px;">Número de huéspedes</label>
@@ -83,13 +85,15 @@
                 </div>
                 <input type="hidden" name="num_huespedes" id="numHuespedesInput" value="2">
                 <small style="color:#9ca3af; font-size:0.72rem;">* Este dato aún no se guarda — la base de datos no tiene una columna para huéspedes por reservación.</small>
+                -->
             </div>
 
         </div>
 
-        <div class="form-sections form-sections--two">
-
+        <!-- <div class="form-sections form-sections--two"> -->
+            <!-- RECORTAMOS -->
             <!-- 4. Servicios adicionales (no persisten todavía) -->
+            <!--
             <div class="form-section">
                 <h3><span class="step-num">4</span> Servicios adicionales</h3>
                 <div class="checkbox-grid">
@@ -112,16 +116,18 @@
                 </div>
                 <small style="color:#9ca3af; font-size:0.72rem;">* Todavía no hay tabla para guardar servicios; por ahora es solo visual.</small>
             </div>
+            -->
 
             <!-- 5. Peticiones especiales (no persiste todavía) -->
+            <!-- Originalmente era el elemento 5, pero al eliminar el 4, este es el nuevo 4 -->
             <div class="form-section">
-                <h3><span class="step-num">5</span> Peticiones especiales</h3>
+                <h3><span class="step-num">4</span> Peticiones especiales</h3>
                 <div class="field">
                     <textarea name="peticiones" placeholder="Comparte si tiene alguna petición especial..."></textarea>
                 </div>
             </div>
 
-        </div>
+        <!-- </div> -->
 
         <div class="form-footer">
             <div class="form-footer__total">
