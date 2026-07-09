@@ -94,7 +94,15 @@ INSERT INTO SIS_Habitacion (HAB_numero, HAB_tipo_habitacion, HAB_tipo_cama, HAB_
 ("101", "Individual", "1 cama individual", 1500.00, "Disponible", NULL),
 ("102", "Doble", "2 camas individuales", 2200.00, "Disponible", NULL),
 ("103", "Suite", "King Size", 4500.00, "Disponible", NULL),
-("104", "Doble", "1 cama matrimonial", 2000.00, "Disponible", NULL);
+("104", "Doble", "1 cama matrimonial", 2000.00, "Disponible", NULL),
+("105", "Individual", "1 cama individual", 1500.00, "Disponible", NULL),
+("106", "Doble", "2 camas individuales", 2200.00, "Disponible", NULL),
+("107", "Suite", "King Size", 4500.00, "Disponible", NULL),
+("108", "Doble", "1 cama matrimonial", 2000.00, "Disponible", NULL),
+("109", "Individual", "1 cama individual", 1500.00, "Disponible", NULL),
+("110", "Doble", "2 camas individuales", 2200.00, "Disponible", NULL),
+("111", "Suite", "King Size", 4500.00, "Disponible", NULL),
+("112", "Doble", "1 cama matrimonial", 2000.00, "Disponible", NULL);
 
 INSERT INTO SIS_Platillo (PLA_nombre, PLA_tipo, PLA_precio, PLA_foto) VALUES
 -- Entradas
